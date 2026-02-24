@@ -1,0 +1,40 @@
+[package]
+name = "exchange-connection-hub"
+version = "0.1.0"
+edition = "2021"
+authors = ["Victor"]
+license = "MIT OR Apache-2.0"
+description = "Unified exchange connection hub for HFT systems"
+repository = "https://github.com/hft-system/exchange-connection-hub"
+keywords = ["hft", "exchange", "trading", "market-data"]
+categories = ["finance", "network-programming"]
+
+[dependencies]
+# Core dependencies
+tokio = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+async-trait = "0.1"
+
+# Event bus integration
+hft-event-bus = { path = "../core/hft-event-bus" }
+
+# Market data integration
+market-data-engine = { path = "../data/market-data-engine" }
+
+# Protocol support
+tokio-tungstenite = { workspace = true }
+bytes = { workspace = true }
+byteorder = "1.5"
+
+[features]
+default = ["ninjatrader", "websocket"]
+ninjatrader = []
+websocket = []
+
+[dev-dependencies]
+tokio-test = { workspace = true }
+tempfile = "3.8"
+tracing-subscriber = "0.3"
