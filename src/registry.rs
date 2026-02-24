@@ -12,7 +12,7 @@ pub struct ExchangeConnectionRegistry {
     factories: HashMap<ExchangeId, Box<dyn ConnectionFactory>>,
 }
 
-impl ExchangeRegistry {
+impl ExchangeConnectionRegistry {
     /// Create a new exchange registry with default factories
     pub fn new() -> Self {
         let mut registry = Self {
@@ -58,7 +58,7 @@ impl ExchangeRegistry {
     /// Get supported features for an exchange
     pub fn get_supported_features(&self, exchange_id: ExchangeId) -> Vec<ExchangeFeature> {
         self.factories.get(&exchange_id)
-            .map(|factory: &dyn ConnectionFactory| factory.supported_features())
+            .map(|factory: &Box<dyn ConnectionFactory>| factory.supported_features())
             .unwrap_or_default()
     }
     
@@ -70,7 +70,7 @@ impl ExchangeRegistry {
     /// Get information about all registered exchanges
     pub fn get_exchange_info(&self) -> Vec<RegisteredExchangeInfo> {
         self.factories.values()
-            .map(|factory: &dyn ConnectionFactory| RegisteredExchangeInfo {
+            .map(|factory: &Box<dyn ConnectionFactory>| RegisteredExchangeInfo {
                 exchange_id: factory.exchange_id(),
                 supported_features: factory.supported_features(),
             })
@@ -85,7 +85,7 @@ pub struct RegisteredExchangeInfo {
     pub supported_features: Vec<ExchangeFeature>,
 }
 
-impl Default for ExchangeRegistry {
+impl Default for ExchangeConnectionRegistry {
     fn default() -> Self {
         Self::new()
     }

@@ -26,6 +26,7 @@ market-data-engine = { path = "../data/market-data-engine" }
 
 # Protocol support
 tokio-tungstenite = { workspace = true }
+futures-util = "0.3"
 bytes = { workspace = true }
 byteorder = "1.5"
 

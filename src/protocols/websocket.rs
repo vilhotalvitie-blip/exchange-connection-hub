@@ -189,7 +189,7 @@ impl WebSocketConnection {
     
     /// Handle WebSocket messages
     async fn handle_messages(&mut self) -> Result<()> {
-        if let Some(ref mut ws) = self.websocket {
+        if let Some(mut ws) = self.websocket.take() {
             use futures_util::StreamExt;
             while let Some(message) = StreamExt::next(&mut ws).await {
                 match message {
@@ -245,8 +245,9 @@ impl ExchangeConnection for WebSocketConnection {
     }
     
     async fn disconnect(&mut self) -> Result<()> {
-        if let Some(ref mut ws) = self.websocket {
-            StreamExt::next(ws).await?;
+        if let Some(mut ws) = self.websocket.take() {
+            use futures_util::StreamExt;
+            let _ = StreamExt::next(&mut ws).await;
         }
         
         self.websocket = None;

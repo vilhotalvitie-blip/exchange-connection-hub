@@ -56,7 +56,7 @@ pub struct ExchangeHub {
     market_data_bridge: MarketDataBridge,
     event_processor: Arc<market_data_engine::handlers::EventProcessor>,
     event_bus: Arc<hft_event_bus::typed_bus::TypedEventBus>,
-    registry: ExchangeRegistry,
+    registry: ExchangeConnectionRegistry,
 }
 
 impl ExchangeHub {
@@ -70,7 +70,7 @@ impl ExchangeHub {
             market_data_bridge,
             event_processor,
             event_bus,
-            registry: ExchangeRegistry::default(),
+            registry: ExchangeConnectionRegistry::default(),
         }
     }
     
@@ -135,7 +135,7 @@ impl Clone for ExchangeHub {
             market_data_bridge: MarketDataBridge::new(self.event_processor.clone(), self.event_bus.clone()),
             event_processor: self.event_processor.clone(),
             event_bus: self.event_bus.clone(),
-            registry: ExchangeRegistry::default(),
+            registry: ExchangeConnectionRegistry::default(),
         }
     }
 }

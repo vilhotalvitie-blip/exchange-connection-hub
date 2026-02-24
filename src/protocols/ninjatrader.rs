@@ -4,7 +4,8 @@ use async_trait::async_trait;
 use anyhow::{Result, Context};
 use std::sync::Arc;
 use tokio::net::{TcpListener, TcpStream};
-use tokio::io::{AsyncReadExt, AsyncWriteExt, ReadExt};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use std::io::Read;
 use tracing::{info, warn, error, debug};
 use byteorder::{LittleEndian, ReadBytesExt};
 
@@ -56,9 +57,7 @@ impl NinjaTraderConnection {
         
         // Read symbol (8 bytes)
         let mut symbol_bytes = [0u8; 8];
-        use std::io::Read;
-        use std::io::Read;
-        Read::read_exact(&mut cursor, &mut symbol_bytes)?;
+                        Read::read_exact(&mut cursor, &mut symbol_bytes)?;
         let symbol = std::str::from_utf8(&symbol_bytes)
             .map_err(|_| anyhow::anyhow!("Invalid symbol"))?
             .trim_end_matches('\0');
@@ -98,9 +97,7 @@ impl NinjaTraderConnection {
         
         // Read symbol (8 bytes)
         let mut symbol_bytes = [0u8; 8];
-        use std::io::Read;
-        use std::io::Read;
-        Read::read_exact(&mut cursor, &mut symbol_bytes)?;
+                        Read::read_exact(&mut cursor, &mut symbol_bytes)?;
         let symbol = std::str::from_utf8(&symbol_bytes)
             .map_err(|_| anyhow::anyhow!("Invalid symbol"))?
             .trim_end_matches('\0');
