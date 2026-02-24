@@ -67,7 +67,7 @@ impl MarketDataBridge {
             quotes_processed: processor_stats.quotes_processed.load(std::sync::atomic::Ordering::Relaxed),
             total_events: processor_stats.trades_processed.load(std::sync::atomic::Ordering::Relaxed) 
                 + processor_stats.quotes_processed.load(std::sync::atomic::Ordering::Relaxed),
-            uptime: processor_stats.uptime(),
+            uptime: self.event_processor.uptime(),
         }
     }
 }

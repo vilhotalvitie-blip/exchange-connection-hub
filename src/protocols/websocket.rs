@@ -3,7 +3,8 @@
 use async_trait::async_trait;
 use anyhow::{Result, Context};
 use std::sync::Arc;
-use futures_util::{SinkExt, StreamExt};
+use futures_util::{StreamExt};
+use futures_util::sink::SinkExt;
 use tokio_tungstenite::{connect_async, tungstenite::Message, WebSocketStream};
 use tokio::net::TcpStream;
 use tracing::info;
@@ -11,7 +12,7 @@ use serde_json;
 
 use crate::protocols::base::{ExchangeConnection, BaseExchangeConnection, ConnectionFactory, ExchangeFeature};
 use crate::types::{ExchangeId, ExchangeConfig, Symbol, ConnectionHealth, OrderRequest, OrderId, ExchangeData};
-use market_data_engine::types::{TradeV2, QuoteV2, OrderBookSnapshot, Price, Quantity, Timestamp, InstrumentId, Exchange, PriceLevel};
+use market_data_engine::types::{TradeV2, QuoteV2, OrderBookSnapshot, Price, Quantity, Timestamp, InstrumentId, Exchange, SideV2, PriceLevel};
 
 /// Generic WebSocket connection implementation
 pub struct WebSocketConnection {
@@ -22,12 +23,13 @@ pub struct WebSocketConnection {
 
 impl WebSocketConnection {
     /// Create a new WebSocket connection
-    pub fn new(config: ExchangeConfig, exchange_name: String) -> Self {
-        Self {
-            base: BaseExchangeConnection::new(ExchangeId::WebSocket(exchange_name.clone()), config),
+    pub fn new(config: ExchangeConfig, exchange_name: String) -> Result<Self> {
+        let exchange_id = ExchangeId::WebSocket(exchange_name);
+        Ok(Self {
+            base: BaseExchangeConnection::new(exchange_id, config)?,
             websocket: None,
             exchange_name,
-        }
+        })
     }
     
     /// Parse JSON message from WebSocket
@@ -72,10 +74,10 @@ impl WebSocketConnection {
                 .unwrap()
                 .as_nanos() as i64),
             trade_id: 0, // TODO: proper trade ID
-            side: market_data_engine::types::Side::Buy, // TODO: proper side detection
+            side: SideV2::Buy, // TODO: proper side detection
             exchange: 0, // TODO: proper exchange mapping
             flags: market_data_engine::types::TradeFlags::new(0),
-            _padding: [0; 5],
+            _padding: [0; 12],
         };
         
         Ok(ExchangeData::Trade(trade))
@@ -175,7 +177,7 @@ impl WebSocketConnection {
             });
             
             let message = Message::Text(subscription.to_string());
-            SinkExt::send(&mut ws, message).await
+            SinkExt::send::<Message, _>(&mut ws, message).await
                 .map_err(|e| anyhow::anyhow!("Failed to send subscription: {}", e))?;
             
             info!("Sent subscription for symbols: {:?}", symbols);
@@ -277,7 +279,7 @@ impl ExchangeConnection for WebSocketConnection {
             });
             
             let message = Message::Text(subscription.to_string());
-            ws.send_all(message).await
+            SinkExt::send::<Message, _>(&mut ws, message).await
                 .map_err(|e| anyhow::anyhow!("Failed to send unsubscription: {}", e))?;
         }
         

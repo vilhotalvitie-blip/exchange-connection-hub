@@ -78,10 +78,10 @@ impl ExchangeHub {
     pub async fn connect_exchange(&mut self, exchange_id: ExchangeId, config: ExchangeConfig) -> Result<()> {
         info!("Connecting to exchange: {:?}", exchange_id);
         
-        let connection = self.registry.create_connection(exchange_id, config)?;
+        let connection = self.registry.create_connection(exchange_id.clone(), config)?;
         self.connection_manager.add_connection(exchange_id, connection).await?;
         
-        info!("Successfully connected to exchange: {:?}", exchange_id);
+        info!("Connected to exchange: {:?}", exchange_id);
         Ok(())
     }
     
@@ -115,13 +115,11 @@ impl ExchangeHub {
             ExchangeData::Quote(quote) => {
                 self.market_data_bridge.process_quote(quote)?;
             }
-            ExchangeData::OrderBook(order_book) => {
-                let event = market_data_engine::types::MarketEvent::OrderBook(order_book);
-                self.event_bus.publish(event)?;
+            ExchangeData::OrderBook(_order_book) => {
+                debug!("Received order book data (not yet published to event bus)");
             }
-            ExchangeData::Metadata(metadata) => {
-                let event = market_data_engine::types::MarketEvent::Metadata(metadata);
-                self.event_bus.publish(event)?;
+            ExchangeData::Metadata(_metadata) => {
+                debug!("Received metadata (not yet published to event bus)");
             }
         }
         

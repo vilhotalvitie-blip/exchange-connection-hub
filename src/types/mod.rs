@@ -4,12 +4,12 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Unique identifier for an exchange
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ExchangeId {
     NinjaTrader,
     InteractiveBrokers,
     Databento,
-    WebSocket(String), // For generic WebSocket exchanges
+    WebSocket(&'static str), // For generic WebSocket exchanges
     FIX(String),       // For FIX protocol exchanges
 }
 

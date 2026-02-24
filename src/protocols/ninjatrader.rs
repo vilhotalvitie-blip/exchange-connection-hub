@@ -10,7 +10,7 @@ use byteorder::{LittleEndian, ReadBytesExt};
 
 use crate::protocols::base::{ExchangeConnection, BaseExchangeConnection, ConnectionFactory, ExchangeFeature};
 use crate::types::{ExchangeId, ExchangeConfig, Symbol, ConnectionHealth, OrderRequest, OrderId, ExchangeData};
-use market_data_engine::types::{TradeV2, QuoteV2, OrderBookSnapshot, Price, Quantity, Timestamp, InstrumentId, Exchange};
+use market_data_engine::types::{TradeV2, QuoteV2, OrderBookSnapshot, Price, Quantity, Timestamp, InstrumentId, Exchange, SideV2, TradeFlags};
 
 /// NinjaTrader connection implementation
 pub struct NinjaTraderConnection {
@@ -64,21 +64,25 @@ impl NinjaTraderConnection {
             .trim_end_matches('\0');
         
         // Read price (8 bytes, little-endian double)
-        let price = cursor.read_f64::<LittleEndian>()?;
+        let price = ReadBytesExt::read_f64::<LittleEndian>(&mut cursor)?;
         
         // Read quantity (4 bytes, little-endian u32)
-        let quantity = cursor.read_u32::<LittleEndian>()?;
+        let quantity = ReadBytesExt::read_u32::<LittleEndian>(&mut cursor)?;
         
         // Create trade
         let trade = TradeV2 {
             instrument_id: InstrumentId::new(Exchange::Unknown, symbol),
-            price: Price::from(price),
+            price: Price::from_float(price),
             quantity: Quantity::from(quantity),
-            timestamp: Timestamp::from(std::time::SystemTime::now()
+            timestamp: Timestamp::from_nanos(std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap()
-                .as_nanos() as u64),
-            exchange_timestamp: None,
+                .as_nanos() as i64),
+            trade_id: 0, // TODO: proper trade ID
+            side: SideV2::Buy, // TODO: proper side detection
+            exchange: 0, // TODO: proper exchange mapping
+            flags: market_data_engine::types::TradeFlags::new(0),
+            _padding: [0; 12],
         };
         
         Ok(ExchangeData::Trade(trade))
@@ -108,10 +112,10 @@ impl NinjaTraderConnection {
         let ask_price = ReadBytesExt::read_f64::<LittleEndian>(&mut cursor).unwrap_or(0.0);
         
         // Read bid quantity (4 bytes, little-endian u32)
-        let bid_quantity = ReadBytesExt::read_u32(&mut cursor).unwrap_or(0);
+        let bid_quantity = ReadBytesExt::read_u32::<LittleEndian>(&mut cursor).unwrap_or(0);
         
         // Read ask quantity (4 bytes, little-endian u32)
-        let ask_quantity = ReadBytesExt::read_u32(&mut cursor).unwrap_or(0);
+        let ask_quantity = ReadBytesExt::read_u32::<LittleEndian>(&mut cursor).unwrap_or(0);
         
         // Create quote
         let quote = QuoteV2 {

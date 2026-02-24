@@ -100,14 +100,14 @@ pub struct BaseExchangeConnection {
 
 impl BaseExchangeConnection {
     /// Create a new base connection
-    pub fn new(exchange_id: ExchangeId, config: ExchangeConfig) -> Self {
-        Self {
+    pub fn new(exchange_id: ExchangeId, config: ExchangeConfig) -> Result<Self> {
+        Ok(Self {
             exchange_id,
             config,
             stats: ConnectionStats::default(),
             data_sender: None,
             is_connected: false,
-        }
+        })
     }
     
     /// Get the exchange ID
