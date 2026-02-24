@@ -140,6 +140,13 @@ impl Clone for ExchangeHub {
     }
 }
 
+impl ExchangeHub {
+    /// Get the event processor for external access
+    pub fn get_event_processor(&self) -> Arc<market_data_engine::handlers::EventProcessor> {
+        self.event_processor.clone()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

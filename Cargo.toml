@@ -29,6 +29,7 @@ tokio-tungstenite = { workspace = true }
 futures-util = "0.3"
 bytes = { workspace = true }
 byteorder = "1.5"
+tracing-subscriber = "0.3"
 
 [features]
 default = ["ninjatrader", "websocket"]
@@ -38,4 +39,3 @@ websocket = []
 [dev-dependencies]
 tokio-test = { workspace = true }
 tempfile = "3.8"
-tracing-subscriber = "0.3"

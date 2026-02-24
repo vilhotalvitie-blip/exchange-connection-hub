@@ -1,7 +1,9 @@
 //! Example binary for exchange connection hub
 
-use exchange_connection_hub::{ExchangeHub, ExchangeConfig};
+use exchange_connection_hub::{ExchangeHub};
+use exchange_connection_hub::types::ExchangeConfig;
 use hft_event_bus::typed_bus::TypedEventBus;
+use tracing_subscriber;
 use std::sync::Arc;
 
 #[tokio::main]
@@ -25,12 +27,12 @@ async fn main() -> anyhow::Result<()> {
     println!("📊 Connection status: {} connections", hub.connection_status().len());
     
     // Show statistics
-    let event_processor = hub.event_processor();
-    let stats = event_processor.get_stats();
+    let event_processor = hub.get_event_processor();
+    let stats = event_processor.stats();
     println!("📈 Initial statistics:");
     println!("  Trades processed: {}", stats.trades_processed.load(std::sync::atomic::Ordering::Relaxed));
     println!("  Quotes processed: {}", stats.quotes_processed.load(std::sync::atomic::Ordering::Relaxed));
-    println!("  Uptime: {:?}", stats.uptime());
+    println!("  Uptime: {:?}", event_processor.uptime());
     
     println!("🎯 Example hub is ready. Press Ctrl+C to stop.");
     
