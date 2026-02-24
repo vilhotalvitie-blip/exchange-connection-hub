@@ -23,7 +23,7 @@ impl NinjaTraderConnection {
     /// Create a new NinjaTrader connection
     pub fn new(config: ExchangeConfig) -> Self {
         Self {
-            base: BaseExchangeConnection::new(ExchangeId::NinjaTrader, config),
+            base: BaseExchangeConnection::new(ExchangeId::NinjaTrader, config).expect("Failed to create base connection"),
             listener: None,
             active_connection: None,
         }

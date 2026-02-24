@@ -24,7 +24,7 @@ pub struct WebSocketConnection {
 impl WebSocketConnection {
     /// Create a new WebSocket connection
     pub fn new(config: ExchangeConfig, exchange_name: String) -> Result<Self> {
-        let exchange_id = ExchangeId::WebSocket(exchange_name.clone());
+        let exchange_id = ExchangeId::WebSocket(exchange_name);
         Ok(Self {
             base: BaseExchangeConnection::new(exchange_id, config)?,
             websocket: None,
@@ -177,9 +177,8 @@ impl WebSocketConnection {
             });
             
             let message = Message::Text(subscription.to_string());
-            // TODO: Fix WebSocket send
-            // futures_util::sink::SinkExt::send_all(&mut ws, message).await
-            //     .map_err(|e| anyhow::anyhow!("Failed to send subscription: {}", e))?;
+            SinkExt::send::<Message, _>(&mut ws, message).await
+                .map_err(|e| anyhow::anyhow!("Failed to send subscription: {}", e))?;
             
             info!("Sent subscription for symbols: {:?}", symbols);
         }
@@ -280,9 +279,8 @@ impl ExchangeConnection for WebSocketConnection {
             });
             
             let message = Message::Text(subscription.to_string());
-            // TODO: Fix WebSocket send
-            // futures_util::sink::SinkExt::send_all(&mut ws, message).await
-            //     .map_err(|e| anyhow::anyhow!("Failed to send unsubscription: {}", e))?;
+            SinkExt::send::<Message, _>(&mut ws, message).await
+                .map_err(|e| anyhow::anyhow!("Failed to send unsubscription: {}", e))?;
         }
         
         Ok(())
@@ -321,7 +319,7 @@ impl ConnectionFactory for WebSocketFactory {
             _ => return Err(anyhow::anyhow!("Invalid exchange ID for WebSocket factory")),
         };
         
-        Ok(Arc::new(WebSocketConnection::new(config, exchange_name.to_string())?))
+        Ok(Arc::new(WebSocketConnection::new(config, exchange_name)))
     }
     
     fn exchange_id(&self) -> ExchangeId {

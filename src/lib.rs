@@ -81,7 +81,7 @@ impl ExchangeHub {
         let connection = self.registry.create_connection(exchange_id.clone(), config)?;
         self.connection_manager.add_connection(exchange_id, connection).await?;
         
-        info!("Connected to exchange: {:?}", exchange_id);
+        info!("Connected to exchange: {:?}", exchange_id.clone());
         Ok(())
     }
     

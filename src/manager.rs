@@ -30,14 +30,13 @@ impl ExchangeConnectionManager {
         // Store connection
         {
             let mut connections = self.connections.write().unwrap();
-            let exchange_id_clone = exchange_id.clone();
-            connections.insert(exchange_id_clone, connection.clone());
+            connections.insert(exchange_id.clone(), connection.clone());
         }
         
         // Initialize status
         {
             let mut status = self.status.write().unwrap();
-            status.insert(exchange_id_clone, ConnectionStatus {
+            status.insert(exchange_id.clone(), ConnectionStatus {
                 exchange_id,
                 health: ConnectionHealth::Healthy,
                 last_message_time: None,
