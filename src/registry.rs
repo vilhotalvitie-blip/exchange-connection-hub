@@ -4,12 +4,11 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use anyhow::Result;
 use tracing::{info};
-
-use crate::protocols::base::ConnectionFactory;
-use crate::types::{ExchangeId, ExchangeConfig, ExchangeFeature};
+use crate::protocols::base::{ConnectionFactory, ExchangeFeature};
+use crate::types::{ExchangeId, ExchangeConfig};
 
 /// Registry for exchange connection factories
-pub struct ExchangeRegistry {
+pub struct ExchangeConnectionRegistry {
     factories: HashMap<ExchangeId, Box<dyn ConnectionFactory>>,
 }
 
@@ -59,7 +58,7 @@ impl ExchangeRegistry {
     /// Get supported features for an exchange
     pub fn get_supported_features(&self, exchange_id: ExchangeId) -> Vec<ExchangeFeature> {
         self.factories.get(&exchange_id)
-            .map(|factory| factory.supported_features())
+            .map(|factory: &dyn ConnectionFactory| factory.supported_features())
             .unwrap_or_default()
     }
     
@@ -69,9 +68,9 @@ impl ExchangeRegistry {
     }
     
     /// Get information about all registered exchanges
-    pub fn get_exchange_info(&self) -> Vec<ExchangeInfo> {
+    pub fn get_exchange_info(&self) -> Vec<RegisteredExchangeInfo> {
         self.factories.values()
-            .map(|factory| ExchangeInfo {
+            .map(|factory: &dyn ConnectionFactory| RegisteredExchangeInfo {
                 exchange_id: factory.exchange_id(),
                 supported_features: factory.supported_features(),
             })
@@ -81,7 +80,7 @@ impl ExchangeRegistry {
 
 /// Information about a registered exchange
 #[derive(Debug, Clone)]
-pub struct ExchangeInfo {
+pub struct RegisteredExchangeInfo {
     pub exchange_id: ExchangeId,
     pub supported_features: Vec<ExchangeFeature>,
 }

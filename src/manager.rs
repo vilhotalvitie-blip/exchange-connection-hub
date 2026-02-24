@@ -25,19 +25,20 @@ impl ExchangeConnectionManager {
     
     /// Add a new connection to the manager
     pub async fn add_connection(&mut self, exchange_id: ExchangeId, connection: Arc<dyn ExchangeConnection>) -> Result<()> {
+        let exchange_id_clone = exchange_id.clone();
         info!("Adding connection for exchange: {:?}", exchange_id);
         
         // Store connection
         {
             let mut connections = self.connections.write().unwrap();
-            connections.insert(exchange_id.clone(), connection.clone());
+            connections.insert(exchange_id_clone.clone(), connection.clone());
         }
         
         // Initialize status
         {
             let mut status = self.status.write().unwrap();
-            status.insert(exchange_id.clone(), ConnectionStatus {
-                exchange_id,
+            status.insert(exchange_id_clone.clone(), ConnectionStatus {
+                exchange_id: exchange_id_clone.clone(),
                 health: ConnectionHealth::Healthy,
                 last_message_time: None,
                 messages_received: 0,
@@ -47,7 +48,9 @@ impl ExchangeConnectionManager {
         }
         
         // Start health monitoring
-        self.start_health_monitoring(exchange_id.clone(), connection.clone()).await;
+        let exchange_id_for_monitoring = exchange_id_clone.clone();
+        let connection_for_monitoring = connection.clone();
+        self.start_health_monitoring(exchange_id_for_monitoring, connection_for_monitoring).await;
         
         info!("Successfully added connection for exchange: {:?}", exchange_id);
         Ok(())

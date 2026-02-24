@@ -7,7 +7,7 @@ use futures_util::{StreamExt};
 use futures_util::sink::SinkExt;
 use tokio_tungstenite::{connect_async, tungstenite::Message, WebSocketStream};
 use tokio::net::TcpStream;
-use tracing::info;
+use tracing::{info, debug, error, warn};
 use serde_json;
 
 use crate::protocols::base::{ExchangeConnection, BaseExchangeConnection, ConnectionFactory, ExchangeFeature};

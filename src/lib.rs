@@ -34,7 +34,7 @@
 
 use std::sync::Arc;
 use anyhow::Result;
-use tracing::info;
+use tracing::{info, debug};
 
 pub mod protocols;
 pub mod types;
@@ -44,7 +44,7 @@ pub mod adapters;
 
 use adapters::market_data::MarketDataBridge;
 use manager::ExchangeConnectionManager;
-use registry::ExchangeRegistry;
+use registry::ExchangeConnectionRegistry;
 use types::{ExchangeId, ExchangeConfig, Symbol, ExchangeData};
 use hft_event_bus::typed_bus::TypedEventBus;
 use market_data_engine::handlers::EventProcessor;
@@ -79,9 +79,10 @@ impl ExchangeHub {
         info!("Connecting to exchange: {:?}", exchange_id);
         
         let connection = self.registry.create_connection(exchange_id.clone(), config)?;
+        let exchange_id_for_log = exchange_id.clone();
         self.connection_manager.add_connection(exchange_id, connection).await?;
         
-        info!("Connected to exchange: {:?}", exchange_id.clone());
+        info!("Connected to exchange: {:?}", exchange_id_for_log);
         Ok(())
     }
     
